@@ -1,0 +1,37 @@
+camera:
+  source: 0
+  width: 1280
+  height: 720
+  fps: 30
+
+detection:
+  model_path: "yolov8n.pt"
+  confidence: 0.5
+  classes:
+    - 0
+
+queue:
+  roi_points:
+    - [200, 150]
+    - [1080, 150]
+    - [1080, 570]
+    - [200, 570]
+  max_threshold: 10
+  min_threshold: 3
+  history_size: 100
+  avg_service_time: 120
+
+alerts:
+  led_enabled: true
+  buzzer_enabled: true
+  alert_duration: 2
+
+server:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+
+recommendations:
+  staff_per_5_people: 1
+  max_queue_per_staff: 5
+  current_staff: 2

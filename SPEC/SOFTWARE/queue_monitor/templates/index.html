@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Queue Monitor</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Queue Monitoring System</h1>
+            <div class="status-indicator">
+                <span id="connection-status" class="status-dot"></span>
+                <span id="connection-text">Connecting...</span>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="card video-card">
+                <h2>Live Feed</h2>
+                <img id="video-feed" src="/api/frame/annotated" alt="Video Feed">
+                <div class="roi-overlay">
+                    <span id="queue-count-overlay">0</span>
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <div class="card">
+                    <h3>Current Queue</h3>
+                    <div id="current-count" class="stat-value">0</div>
+                    <div id="status-badge" class="status-badge">INITIALIZING</div>
+                </div>
+
+                <div class="card">
+                    <h3>Wait Time</h3>
+                    <div id="wait-time" class="stat-value">0 <span>min</span></div>
+                </div>
+
+                <div class="card">
+                    <h3>Peak Count</h3>
+                    <div id="peak-count" class="stat-value">0</div>
+                </div>
+
+                <div class="card">
+                    <h3>Average</h3>
+                    <div id="avg-count" class="stat-value">0</div>
+                </div>
+
+                <div class="card">
+                    <h3>Trend</h3>
+                    <div id="trend" class="trend-value">STABLE</div>
+                </div>
+            </div>
+
+            <div class="card recommendation-card">
+                <h3>Staffing Recommendation</h3>
+                <div id="recommendation">
+                    <p class="loading">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Last updated: <span id="last-update">--</span></p>
+            <button id="reset-btn" class="btn-secondary">Reset Stats</button>
+        </div>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

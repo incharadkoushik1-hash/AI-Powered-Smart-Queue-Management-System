@@ -1,0 +1,208 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+header h1 {
+    font-size: 1.8rem;
+    color: #00d4ff;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ff4757;
+}
+
+.status-dot.connected {
+    background: #2ed573;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.card h2, .card h3 {
+    margin-bottom: 15px;
+    color: #aaa;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.video-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.video-card img {
+    width: 100%;
+    border-radius: 8px;
+    background: #000;
+}
+
+.roi-overlay {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    background: rgba(0,0,0,0.7);
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+#queue-count-overlay {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+.stats-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.stats-panel .card:first-child {
+    grid-column: span 2;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #00d4ff;
+    text-align: center;
+}
+
+.stat-value span {
+    font-size: 1rem;
+    color: #888;
+}
+
+.status-badge {
+    text-align: center;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+    display: inline-block;
+}
+
+.status-badge.CRITICAL {
+    background: #ff4757;
+    color: #fff;
+}
+
+.status-badge.HIGH {
+    background: #ffa502;
+    color: #000;
+}
+
+.status-badge.NORMAL {
+    background: #2ed573;
+    color: #000;
+}
+
+.status-badge.LOW {
+    background: #3498db;
+    color: #fff;
+}
+
+.trend-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+}
+
+.trend-value.INCREASING { color: #ff4757; }
+.trend-value.DECREASING { color: #2ed573; }
+.trend-value.STABLE { color: #ffa502; }
+
+.recommendation-card {
+    grid-column: span 2;
+}
+
+.recommendation-card .loading {
+    color: #888;
+    text-align: center;
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.footer {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    color: #888;
+}
+
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-panel .card:first-child,
+    .recommendation-card {
+        grid-column: span 1;
+    }
+}
