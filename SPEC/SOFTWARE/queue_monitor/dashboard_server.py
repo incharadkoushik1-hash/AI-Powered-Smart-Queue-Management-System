@@ -1,8 +1,7 @@
 import cv2
 import logging
-import io
 import threading
-from flask import Flask, render_template, jsonify, Response, send_file
+from flask import Flask, render_template, jsonify, Response
 from flask_cors import CORS
 from datetime import datetime
 
@@ -24,6 +23,17 @@ global_stats = {
 }
 stats_lock = threading.Lock()
 
+global_shelf_stats = {
+    'total_shelves': 0,
+    'overall_status': 'OK',
+    'shelves': []
+}
+shelf_stats_lock = threading.Lock()
+
+analyzer_instance = None
+recommender_instance = None
+camera_instance = None
+
 
 def init_server(analyzer, recommender, camera_handler):
     global analyzer_instance, recommender_instance, camera_instance
@@ -37,6 +47,12 @@ def update_stats(stats: dict):
     with stats_lock:
         global_stats = stats.copy()
         global_stats['timestamp'] = datetime.now().isoformat()
+
+
+def update_shelf_stats(stats: dict):
+    global global_shelf_stats
+    with shelf_stats_lock:
+        global_shelf_stats = stats.copy()
 
 
 def update_frame(frame):
@@ -58,6 +74,28 @@ def get_stats():
         recommendation = recommender_instance.get_recommendation(stats.get('current_count', 0))
         stats['recommendation'] = recommendation
     
+    with shelf_stats_lock:
+        stats['shelf_status'] = global_shelf_stats.copy()
+    
+    return jsonify(stats)
+
+
+@app.route('/api/queue/stats')
+def get_queue_stats():
+    with stats_lock:
+        stats = global_stats.copy()
+    
+    if analyzer_instance:
+        recommendation = recommender_instance.get_recommendation(stats.get('current_count', 0))
+        stats['recommendation'] = recommendation
+    
+    return jsonify(stats)
+
+
+@app.route('/api/shelf/stats')
+def get_shelf_stats():
+    with shelf_stats_lock:
+        stats = global_shelf_stats.copy()
     return jsonify(stats)
 
 

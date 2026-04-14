@@ -1,10 +1,82 @@
 # Limitations and Future Scope
 
-## AI-Based Queue Monitoring System
+## AI-Powered Smart Retail Store System
 
 ---
 
 ## Current Limitations
+
+### 1. Single Camera Coverage
+
+**Limitation:** System supports only one camera with one detection zone
+
+**Impact:**
+- Cannot distinguish multiple parallel queues
+- Cannot track customers across different store areas
+- Limited to one ROI for queue + limited shelf coverage
+
+**Mitigation:**
+- Position camera to cover most critical areas
+- Use wide-angle lens for maximum coverage
+- Multiple systems can be deployed for larger stores
+
+---
+
+### 2. Lighting Conditions
+
+| Condition | Impact | Mitigation |
+|-----------|--------|------------|
+| Low light | Reduced detection accuracy | Add store lighting |
+| Direct sunlight | Washout/overexposure | Reposition camera |
+| Flickering lights | Detection instability | Use stable LED lighting |
+
+---
+
+### 3. Occlusion Handling
+
+**Limitation:** People standing behind others may not be detected
+
+**Impact:**
+- Accuracy drops to 75-85% in crowded conditions
+- May undercount during peak hours
+
+**Current Approach:**
+- Statistical averaging over time
+- Threshold calibration for typical crowd density
+
+---
+
+### 4. Shelf Detection Accuracy
+
+**Limitation:** Color-based detection may vary with product colors and lighting
+
+**Impact:**
+- 85% accuracy (vs 97% for queue detection)
+- May need calibration for different shelf backgrounds
+
+---
+
+### 5. No Person Tracking
+
+**Limitation:** System counts people, doesn't track individuals
+
+**Impact:**
+- Cannot distinguish customers from staff
+- Cannot measure dwell time per customer
+
+**Future:** Implement DeepSORT or ByteTrack for re-identification
+
+---
+
+### 6. Local Operation Only
+
+**Limitation:** No cloud storage or remote access by default
+
+**Impact:**
+- No historical data backup
+- Access limited to local network
+
+**Solution:** Cloud integration available in future phases
 
 ### 1. Lighting Conditions
 

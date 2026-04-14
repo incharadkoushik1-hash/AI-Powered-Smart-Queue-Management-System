@@ -9,6 +9,7 @@ from config.settings import get_settings
 from camera_handler import CameraHandler
 from detector import PersonDetector
 from queue_analyzer import QueueAnalyzer
+from shelf_detector import ShelfDetector
 from alert_manager import AlertManager
 from recommender import StaffingRecommender
 import dashboard_server
@@ -32,9 +33,10 @@ def signal_handler(signum, frame):
 def main():
     global running, settings
     
-    parser = argparse.ArgumentParser(description='AI Queue Monitoring System')
+    parser = argparse.ArgumentParser(description='AI Smart Retail Store System')
     parser.add_argument('--config', type=str, help='Path to config.yaml')
     parser.add_argument('--no-alerts', action='store_true', help='Disable alerts')
+    parser.add_argument('--no-shelf', action='store_true', help='Disable shelf detection')
     args = parser.parse_args()
     
     settings = get_settings()
@@ -49,9 +51,9 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
-    logger.info("=" * 50)
-    logger.info("AI Queue Monitoring System")
-    logger.info("=" * 50)
+    logger.info("=" * 60)
+    logger.info("AI-Powered Smart Retail Store System")
+    logger.info("=" * 60)
     
     logger.info("Initializing camera...")
     camera = CameraHandler(settings.camera)
@@ -68,6 +70,20 @@ def main():
     
     logger.info("Initializing queue analyzer...")
     analyzer = QueueAnalyzer(settings.queue, detector)
+    
+    shelf_enabled = not args.no_shelf and settings.get('shelf_detection.enabled', True)
+    shelf_detector = None
+    
+    if shelf_enabled:
+        logger.info("Initializing shelf detector...")
+        shelf_config = settings.get_section('shelf_detection')
+        if not shelf_config:
+            shelf_config = {'enabled': True, 'low_threshold': 30, 'empty_threshold': 10, 'scan_interval': 10}
+        shelf_config['shelves'] = settings.get('shelves', [])
+        shelf_detector = ShelfDetector(shelf_config)
+        analyzer.set_shelf_detector(shelf_detector, shelf_config)
+    else:
+        logger.info("Shelf detection disabled")
     
     logger.info("Initializing alert manager...")
     alert_manager = AlertManager(settings.alerts)
@@ -95,8 +111,15 @@ def main():
     frame_count = 0
     last_alert_time = time.time()
     alert_cooldown = 10
+    last_shelf_scan = 0
+    shelf_scan_interval = settings.get('shelf_detection.scan_interval', 10) if shelf_enabled else 999999
     
     previous_status = None
+    previous_shelf_status = None
+    
+    warmup_frame = camera.read()
+    if warmup_frame is not None and shelf_detector:
+        shelf_detector.initialize(warmup_frame)
     
     while running:
         frame = camera.read()
@@ -116,6 +139,21 @@ def main():
             
             annotated_frame = analyzer.draw_roi(frame)
             annotated_frame = detector.draw_boxes(annotated_frame, boxes)
+            
+            if shelf_detector and (frame_count - last_shelf_scan) >= shelf_scan_interval:
+                shelf_stats = analyzer.get_shelf_stats(frame)
+                dashboard_server.update_shelf_stats(shelf_stats)
+                
+                if shelf_stats.get('alerts_needed', 0) > 0:
+                    logger.warning(f"Shelf alert: {shelf_stats['alerts_needed']} shelf(ves) need restocking")
+                
+                if shelf_stats.get('overall_status') != previous_shelf_status:
+                    if shelf_stats.get('overall_status') == 'CRITICAL':
+                        alert_manager.system_error()
+                    previous_shelf_status = shelf_stats.get('overall_status')
+                
+                annotated_frame = analyzer.draw_shelf_annotations(annotated_frame)
+                last_shelf_scan = frame_count
             
             dashboard_server.update_frame(annotated_frame)
             dashboard_server.update_stats(stats)
@@ -139,7 +177,11 @@ def main():
             dashboard_server.update_frame(frame)
         
         if frame_count % 100 == 0:
-            logger.info(f"Processed {frame_count} frames - Current queue: {analyzer.current_count}")
+            queue_info = f"Current queue: {analyzer.current_count}"
+            shelf_info = ""
+            if shelf_detector:
+                shelf_info = f" | Shelf status: {analyzer.get_shelf_stats(frame).get('overall_status', 'N/A')}"
+            logger.info(f"Processed {frame_count} frames - {queue_info}{shelf_info}")
     
     logger.info("Shutting down...")
     camera.release()

@@ -50,6 +50,10 @@ function updateDashboard(data) {
     if (data.recommendation) {
         updateRecommendation(data.recommendation);
     }
+    
+    if (data.shelf_status) {
+        updateShelfStatus(data.shelf_status);
+    }
 }
 
 function updateRecommendation(rec) {
@@ -88,6 +92,61 @@ function updateRecommendation(rec) {
     `;
     
     recElement.innerHTML = html;
+}
+
+function updateShelfStatus(stats) {
+    const statusEl = document.getElementById('shelf-overall-status');
+    const alertEl = document.getElementById('shelf-alert');
+    const alertTextEl = document.getElementById('shelf-alert-text');
+    const gridEl = document.getElementById('shelf-grid');
+    
+    if (!stats || !stats.shelves || stats.shelves.length === 0) {
+        statusEl.textContent = 'NO DATA';
+        statusEl.className = 'shelf-status-badge ok';
+        alertEl.style.display = 'none';
+        gridEl.innerHTML = '<p class="loading">Configure shelves in config.yaml</p>';
+        return;
+    }
+    
+    statusEl.textContent = stats.overall_status || 'OK';
+    statusEl.className = 'shelf-status-badge ' + (stats.overall_status || 'ok').toLowerCase();
+    
+    if (stats.alerts_needed > 0) {
+        alertEl.style.display = 'block';
+        let alertMsg = stats.alerts_needed + ' shelf';
+        if (stats.alerts_needed > 1) alertMsg += 'es';
+        alertMsg += ' need attention';
+        if (stats.empty_count > 0) alertMsg += ` (${stats.empty_count} empty)`;
+        if (stats.low_stock_count > 0) alertMsg += ` (${stats.low_stock_count} low)`;
+        alertTextEl.textContent = alertMsg;
+    } else {
+        alertEl.style.display = 'none';
+    }
+    
+    let gridHtml = '';
+    stats.shelves.forEach(shelf => {
+        const statusClass = shelf.status === 'FULL' ? 'full' : (shelf.status === 'LOW STOCK' ? 'low' : 'empty');
+        const itemClass = shelf.status === 'FULL' ? '' : (shelf.status === 'LOW STOCK' ? 'low-stock' : 'empty');
+        
+        gridHtml += `
+            <div class="shelf-item ${itemClass}">
+                <div class="shelf-item-header">
+                    <span class="shelf-item-name">${shelf.name}</span>
+                    <span class="shelf-item-status ${statusClass}">${shelf.status}</span>
+                </div>
+                <div class="shelf-bar">
+                    <div class="shelf-fill ${statusClass === 'low' ? 'low' : ''} ${statusClass === 'empty' ? 'empty' : ''}" 
+                         style="width: ${shelf.fill_percentage}%"></div>
+                </div>
+                <div class="shelf-item-footer">
+                    <span>Fill Level</span>
+                    <span>${shelf.fill_percentage}%</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    gridEl.innerHTML = gridHtml;
 }
 
 function refreshVideoFeed() {

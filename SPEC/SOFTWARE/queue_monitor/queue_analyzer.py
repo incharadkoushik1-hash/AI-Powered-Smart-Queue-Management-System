@@ -3,7 +3,7 @@ import numpy as np
 import logging
 from typing import List, Tuple, Optional, Dict
 from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime
 from detector import BoundingBox
 
 logging.basicConfig(level=logging.INFO)
@@ -18,29 +18,37 @@ class QueueAnalyzer:
         self.max_threshold = config.get('max_threshold', 10)
         self.min_threshold = config.get('min_threshold', 3)
         self.history_size = config.get('history_size', 100)
-        self.count_history = deque(maxlen=self.history_size)
         self.avg_service_time = config.get('avg_service_time', 120)
         self.last_update = datetime.now()
         self.current_count = 0
         self.peak_count = 0
         self.total_count = 0
         
+        self.shelf_detector = None
+        self.shelf_config = None
+        self._shelf_cache = []
+        self._shelf_cache_time = None
+        self._shelf_cache_duration = 2.0
+        
     def set_roi(self, points: List[List[int]]):
         self.roi_points = np.array(points, np.int32)
         logger.info(f"ROI updated: {points}")
         
+    def set_shelf_detector(self, shelf_detector, shelf_config: dict):
+        self.shelf_detector = shelf_detector
+        self.shelf_config = shelf_config
+        logger.info("Shelf detector linked to queue analyzer")
+    
     def is_point_in_roi(self, point: Tuple[int, int]) -> bool:
         x, y = point
         return cv2.pointPolygonTest(self.roi_points, (x, y), False) >= 0
     
     def count_in_roi(self, boxes: List[BoundingBox]) -> int:
         count = 0
-        in_roi_boxes = []
         
         for box in boxes:
             if self.is_point_in_roi(box.center):
                 count += 1
-                in_roi_boxes.append(box)
         
         self.current_count = count
         self.count_history.append({
@@ -86,7 +94,6 @@ class QueueAnalyzer:
     
     def calculate_stats(self) -> Dict:
         now = datetime.now()
-        time_diff = (now - self.last_update).total_seconds()
         self.last_update = now
         
         wait_time = self.calculate_wait_time(self.current_count)
@@ -137,6 +144,38 @@ class QueueAnalyzer:
         cv2.putText(output, text, (x, y), font, font_scale, text_color, 2)
         
         return output
+    
+    def analyze_shelves(self, frame: np.ndarray) -> List:
+        if not self.shelf_detector:
+            return []
+        
+        now = datetime.now()
+        
+        if (self._shelf_cache_time and 
+            (now - self._shelf_cache_time).total_seconds() < self._shelf_cache_duration):
+            return self._shelf_cache
+        
+        self._shelf_cache = self.shelf_detector.analyze_shelf_stock(frame)
+        self._shelf_cache_time = now
+        return self._shelf_cache
+    
+    def get_shelf_stats(self, frame: np.ndarray) -> Dict:
+        shelves = self.analyze_shelves(frame)
+        
+        if self.shelf_detector and shelves:
+            return self.shelf_detector.get_overall_stats(shelves)
+        
+        return {
+            'total_shelves': 0,
+            'overall_status': 'NOT_INITIALIZED',
+            'shelves': []
+        }
+    
+    def draw_shelf_annotations(self, frame: np.ndarray) -> np.ndarray:
+        if self.shelf_detector:
+            shelves = self.analyze_shelves(frame)
+            return self.shelf_detector.draw_annotations(frame, shelves)
+        return frame
     
     def reset_stats(self):
         self.current_count = 0

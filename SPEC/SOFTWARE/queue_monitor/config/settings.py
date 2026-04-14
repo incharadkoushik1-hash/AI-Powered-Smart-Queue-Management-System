@@ -58,6 +58,16 @@ class Settings:
                 'history_size': 100,
                 'avg_service_time': 120
             },
+            'shelves': [
+                {'id': 1, 'name': 'Shelf A', 'bbox': [50, 100, 400, 200], 'category': 'beverages'},
+                {'id': 2, 'name': 'Shelf B', 'bbox': [450, 100, 800, 200], 'category': 'snacks'},
+            ],
+            'shelf_detection': {
+                'enabled': True,
+                'low_threshold': 30,
+                'empty_threshold': 10,
+                'scan_interval': 10
+            },
             'alerts': {
                 'led_enabled': True,
                 'buzzer_enabled': True,
@@ -113,6 +123,10 @@ class Settings:
     @property
     def recommendations(self) -> Dict:
         return self._config.get('recommendations', {})
+    
+    @property
+    def shelf_detection(self) -> Dict:
+        return self._config.get('shelf_detection', {})
 
 
 def get_settings() -> Settings:

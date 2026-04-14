@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Queue Monitor</title>
+    <title>AI Smart Retail Store</title>
     <link rel="stylesheet" href="/static/css/dashboard.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>AI Queue Monitoring System</h1>
+            <div class="header-left">
+                <h1>AI Smart Retail Store</h1>
+                <p class="subtitle">Queue & Shelf Monitoring System</p>
+            </div>
             <div class="status-indicator">
                 <span id="connection-status" class="status-dot"></span>
                 <span id="connection-text">Connecting...</span>
@@ -57,6 +60,16 @@
                 <h3>Staffing Recommendation</h3>
                 <div id="recommendation">
                     <p class="loading">Loading...</p>
+                </div>
+            </div>
+
+            <div class="card shelf-card">
+                <h3>Shelf Availability</h3>
+                <div id="shelf-overall-status" class="shelf-status-badge ok">OK</div>
+                <div id="shelf-alert" class="shelf-alert" style="display: none;">
+                    <span id="shelf-alert-text">Alert</span>
+                </div>
+                <div id="shelf-grid" class="shelf-grid">
                 </div>
             </div>
         </div>
